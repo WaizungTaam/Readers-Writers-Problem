@@ -1,4 +1,7 @@
 Readers Writers Problem
 =======================
 
-Developing...
+Solutions to Reader Writers Problem in Pthreads.
+
+- Reader Preference Version
+- Writer Preference Version

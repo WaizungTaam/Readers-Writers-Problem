@@ -1,12 +1,30 @@
-/* 2016-10-13 */
+/*
+ * Copyright 2016 Waizung Taam
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+/* - 2016-10-13
+ * - Readers-Writers Problem -- readers-preference
+ * - Reference: https://en.wikipedia.org/wiki/Readers%E2%80%93writers_problem
+ */
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
 
-#define MAX_LEN 64
+#define MAX_LEN 32
 #define NUM_WRITERS 4
-#define NUM_READERS 16
+#define NUM_READERS 8
 #define WRITER_SLEEP 0
 #define READER_SLEEP 0
 
@@ -15,10 +33,6 @@ unsigned long __resource_len = 0;
 unsigned long __reader_count = 0;
 pthread_mutex_t __write_mutex;
 pthread_mutex_t __read_mutex;
-
-unsigned long min(unsigned long a, unsigned long b) {
-  return a <= b ? a : b;
-}
 
 void write_resource(unsigned long tid) {
   char ch = 'a' + __resource_len % 26;
@@ -76,16 +90,12 @@ int main() {
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
   pthread_t writers[NUM_WRITERS], readers[NUM_READERS];
-  unsigned long i = 0;
-  for (i = 0; i < min(NUM_WRITERS, NUM_READERS); ++i) {
+
+  for (unsigned long i = 0; i < NUM_WRITERS; ++i) {
     pthread_create(&writers[i], &attr, writer, (void*)i);
+  }
+  for (unsigned long i = 0; i < NUM_READERS; ++i) {
     pthread_create(&readers[i], &attr, reader, (void*)i);
-  }
-  for (unsigned long j = i; j < NUM_WRITERS; ++j) {
-    pthread_create(&writers[j], &attr, writer, (void*)j);
-  }
-  for (unsigned long k = i; k < NUM_READERS; ++k) {
-    pthread_create(&readers[k], &attr, reader, (void*)k);
   }
 
   for (unsigned long j = 0; j < NUM_WRITERS; ++j) {
